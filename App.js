@@ -202,7 +202,7 @@ const App = () => {
             <Image source={require('./assets/cloud.png')} style={styles.cloud} />
           </Animated.View>
           <View style={styles.header}>
-            <Text style={styles.headerText}>Weather & Travel Planner</Text>
+            <Text style={styles.headerText}>Weathering With Us</Text>
             <Switch value={isDarkMode} onValueChange={() => setIsDarkMode(!isDarkMode)} />
           </View>
 
