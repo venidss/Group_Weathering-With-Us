@@ -298,6 +298,7 @@ const App = () => {
   );
 };
 
+//design
 const styles = StyleSheet.create({
   container: {
     flex: 1,
