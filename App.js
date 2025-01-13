@@ -1,3 +1,4 @@
+// Importing necessary components and modules from React Native and React
 import {
   SafeAreaView,
   StyleSheet,
@@ -17,33 +18,42 @@ import {
 import React from "react";
 
 const App = () => {
-  const [data, setData] = React.useState(null);
-  const [city, setCity] = React.useState("Manila");
-  const [inputCity, setInputCity] = React.useState("");
-  const [inputLocation, setInputLocation] = React.useState("");
-  const [inputDestination, setInputDestination] = React.useState("");
-  const [safeRoute, setSafeRoute] = React.useState([]);
-  const [isDarkMode, setIsDarkMode] = React.useState(false);
-  const [loading, setLoading] = React.useState(false); // New loading state
+  // State declarations
+  const [data, setData] = React.useState(null); // Holds weather data for the selected city
+  const [city, setCity] = React.useState("Manila"); // Default city
+  const [inputCity, setInputCity] = React.useState(""); // User input for city search
+  const [inputLocation, setInputLocation] = React.useState(""); // User's starting location for travel
+  const [inputDestination, setInputDestination] = React.useState(""); // User's travel destination
+  const [safeRoute, setSafeRoute] = React.useState([]); // Weather and safety data for the travel route
+  const [isDarkMode, setIsDarkMode] = React.useState(false); // Dark mode toggle
+  const [loading, setLoading] = React.useState(false); // Loading indicator for async operations
+
+  // Animated value for moving clouds
   const cloudAnim = React.useRef(new Animated.Value(0)).current;
+
+  // Reference for horizontal scroll view
   const scrollViewRef = React.useRef(null);
 
+  // Fetch weather data for the specified city
   const fetchWeatherData = (city) => {
     setLoading(true); // Start loading
-    fetch(`http://api.weatherapi.com/v1/forecast.json?key=0a79fb85f113473680193826250601&q=${city}&days=7`)
+    fetch(`http://api.weatherapi.com/v1/forecast.json?key=YOUR_API_KEY&q=${city}&days=7`)
       .then(response => response.json())
       .then(data => {
         if (data.error) {
           Alert.alert("Error", "Invalid city name. Please try again.");
         } else {
           setData(data);
-          checkWeatherAlerts(data);
+          checkWeatherAlerts(data); // Check for rain alerts
         }
-      }).catch((error) => {
+      })
+      .catch(() => {
         Alert.alert("Error", "Failed to fetch weather data. Please try again later.");
-      }).finally(() => setLoading(false)); // Stop loading
+      })
+      .finally(() => setLoading(false)); // Stop loading
   };
 
+  // Generate intermediate cities for a route based on the start and end points
   const generateRouteCities = (start, end) => {
     const routeCities = [start, end];
     if (start === "Manila" && end === "Batangas") {
@@ -52,6 +62,7 @@ const App = () => {
     return routeCities.join(" → ");
   };
 
+  // Fetch weather data for all cities along a travel route
   const fetchRouteData = async (start, end) => {
     setLoading(true); // Start loading
     const routeCities = generateRouteCities(start, end);
@@ -61,7 +72,7 @@ const App = () => {
     for (const city of routeCities) {
       try {
         const response = await fetch(
-          `http://api.weatherapi.com/v1/current.json?key=0a79fb85f113473680193826250601&q=${city}`
+          `http://api.weatherapi.com/v1/current.json?key=YOUR_API_KEY&q=${city}`
         );
         const data = await response.json();
         if (data.error) {
@@ -80,14 +91,14 @@ const App = () => {
 
           if (!isSafe) unsafeConditions = true;
         }
-      } catch (error) {
-        console.error(`Error fetching weather for ${city}:`, error);
+      } catch {
         Alert.alert("Error", "Failed to fetch route data.");
       }
     }
 
     setSafeRoute(routeWeather);
 
+    // Show alerts based on travel conditions
     if (unsafeConditions) {
       Alert.alert(
         "Travel Alert",
@@ -102,6 +113,7 @@ const App = () => {
     setLoading(false); // Stop loading
   };
 
+  // Check for upcoming rain alerts within 12 hours
   const checkWeatherAlerts = (data) => {
     const forecast = data.forecast.forecastday[0].hour;
     let closestRain = null;
@@ -119,63 +131,34 @@ const App = () => {
     });
 
     if (closestRain) {
-      let rainIntensity = "a light";
-      if (closestRain.chance_of_rain > 50) rainIntensity = "a moderate";
-      if (closestRain.chance_of_rain > 80) rainIntensity = "a heavy";
-
-      const conditionMap = {
-        "Patchy rain possible": "some rain",
-        "Partly cloudy": "a few clouds",
-        "Sunny": "lots of sunshine",
-        "Overcast": "many clouds",
-        "Clear": "clear skies",
-      };
-
-      const friendlyCondition = conditionMap[closestRain.condition.text] || closestRain.condition.text;
+      const rainIntensity =
+        closestRain.chance_of_rain > 80
+          ? "a heavy"
+          : closestRain.chance_of_rain > 50
+          ? "a moderate"
+          : "a light";
 
       Alert.alert(
         "Rain Alert",
-        `There is ${rainIntensity} rain expected. Expect ${friendlyCondition}.`,
+        `There is ${rainIntensity} rain expected within the next 12 hours.`,
         [{ text: "OK", style: "default" }]
       );
     }
   };
 
+  // Provide travel advice based on weather condition and temperature
   const getTravelAdvice = (condition, temp_c) => {
     if (!condition) return "Weather data unavailable. Please check again later.";
-
-    if (condition.includes("rain") && temp_c < 0) {
-      return "Travel is not advisable due to snow or freezing rain. Stay safe and postpone your trip.";
-    }
-    if (condition.includes("rain") && temp_c > 30) {
-      return "Heavy rain expected. It's better to delay the trip to avoid hazardous conditions.";
-    }
-    if (condition.includes("snow") || temp_c < 0) {
-      return "Snow and cold temperatures make travel risky. Dress warmly and avoid unnecessary trips.";
-    }
-    if (temp_c > 35) {
-      return "Extreme heat is forecasted. Stay hydrated, wear sunscreen, and avoid traveling during peak heat hours.";
-    }
     if (condition.includes("thunderstorm") || condition.includes("tornado")) {
       return "Severe weather warning. It’s not safe to travel in these conditions.";
     }
-
     if (condition.includes("rain")) {
       return "Pack an umbrella or raincoat. Drive carefully and stay updated on weather alerts.";
     }
-    if (condition.includes("sunny") && temp_c > 30) {
-      return "Stay hydrated and wear sunscreen. Avoid prolonged exposure to the sun.";
-    }
-    if (condition.includes("sunny") && temp_c < 15) {
-      return "Wear a light jacket. The weather is pleasant for a trip.";
-    }
-    if (condition.includes("cloudy")) {
-      return "Weather looks clear. Enjoy your trip!";
-    }
-
     return "Weather looks good! Enjoy your trip.";
   };
 
+  // Search for weather data of the user-input city
   const handleSearch = () => {
     if (inputCity.trim() === "") {
       Alert.alert("Error", "Please enter a city name.");
@@ -266,7 +249,7 @@ const App = () => {
                   ))}
                 </ScrollView>
               </View>
-
+                    //Travel Planner (On going)
               <View style={styles.plannerContainer}>
                 <Text style={styles.plannerTitle}>Travel Planner</Text>
                 <TextInput style={styles.input} placeholder="Your Location" value={inputLocation} onChangeText={setInputLocation} />
@@ -298,6 +281,7 @@ const App = () => {
   );
 };
 
+//design
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -450,7 +434,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   routeText: {
-    fontSize: 16,
+    fontSize: 20,
   },
 });
 
