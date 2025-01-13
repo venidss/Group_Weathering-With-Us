@@ -37,7 +37,7 @@ const App = () => {
   // Fetch weather data for the specified city
   const fetchWeatherData = (city) => {
     setLoading(true); // Start loading
-    fetch(`http://api.weatherapi.com/v1/forecast.json?key=0a79fb85f113473680193826250601&q=${city}&days=7`)
+    fetch(`http://api.weatherapi.com/v1/forecast.json?key=YOUR_API_KEY&q=${city}&days=7`)
       .then(response => response.json())
       .then(data => {
         if (data.error) {
@@ -249,7 +249,7 @@ const App = () => {
                   ))}
                 </ScrollView>
               </View>
-
+                    //Travel Planner (On going)
               <View style={styles.plannerContainer}>
                 <Text style={styles.plannerTitle}>Travel Planner</Text>
                 <TextInput style={styles.input} placeholder="Your Location" value={inputLocation} onChangeText={setInputLocation} />
