@@ -69,30 +69,46 @@ const App = () => {
     const routeWeather = [];
     let unsafeConditions = false;
 
-    for (const city of routeCities) {
-      try {
-        const response = await fetch(
-          `http://api.weatherapi.com/v1/current.json?key=YOUR_API_KEY&q=${city}`
-        );
-        const data = await response.json();
-        if (data.error) {
-          Alert.alert("Error", `Failed to fetch weather for ${city}`);
-        } else {
-          const isSafe = !data.current.condition.text.toLowerCase().includes("thunderstorm") &&
-                         !data.current.condition.text.toLowerCase().includes("tornado") &&
-                         data.current.precip_mm <= 10;
+    console.log(`Fetching data for route cities: ${routeCities}`); // Log route cities
 
-          routeWeather.push({
-            city,
-            condition: data.current.condition.text,
-            chanceOfRain: data.current.precip_mm > 0 ? "High" : "Low",
-            isSafe,
-          });
+    // Ensure the city names are split correctly without unnecessary spelling
+    for (const city of routeCities.split(" → ")) {
+      if (city.trim()) {
+        console.log(`Fetching weather data for ${city}...`); // Log current city
 
-          if (!isSafe) unsafeConditions = true;
+        try {
+          const response = await fetch(
+            `http://api.weatherapi.com/v1/current.json?key=0a79fb85f113473680193826250601&q=${city}`
+          );
+
+          // Check if the response is okay
+          if (!response.ok) {
+            throw new Error(`Failed to fetch data for ${city}. Status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log(`Weather data for ${city}: `, data); // Log weather data for each city
+
+          if (data.error) {
+            Alert.alert("Error", `Failed to fetch weather for ${city}: ${data.error.message}`);
+          } else {
+            const isSafe = !data.current.condition.text.toLowerCase().includes("thunderstorm") &&
+                           !data.current.condition.text.toLowerCase().includes("tornado") &&
+                           data.current.precip_mm <= 10;
+
+            routeWeather.push({
+              city,
+              condition: data.current.condition.text,
+              chanceOfRain: data.current.precip_mm > 0 ? "High" : "Low",
+              isSafe,
+            });
+
+            if (!isSafe) unsafeConditions = true;
+          }
+        } catch (error) {
+          console.error(`Error fetching data for ${city}: `, error); // Log error message
+          Alert.alert("Error", `Failed to fetch route data for ${city}. ${error.message}`);
         }
-      } catch {
-        Alert.alert("Error", "Failed to fetch route data.");
       }
     }
 
@@ -111,7 +127,8 @@ const App = () => {
       );
     }
     setLoading(false); // Stop loading
-  };
+};
+
 
   // Check for upcoming rain alerts within 12 hours
   const checkWeatherAlerts = (data) => {
