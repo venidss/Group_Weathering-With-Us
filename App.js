@@ -27,6 +27,7 @@ const App = () => {
   const [safeRoute, setSafeRoute] = React.useState([]); // Weather and safety data for the travel route
   const [isDarkMode, setIsDarkMode] = React.useState(false); // Dark mode toggle
   const [loading, setLoading] = React.useState(false); // Loading indicator for async operations
+  const [travelNotes, setTravelNotes] = React.useState(""); // State for storing travel notes
 
   // Animated value for moving clouds
   const cloudAnim = React.useRef(new Animated.Value(0)).current;
@@ -127,8 +128,7 @@ const App = () => {
       );
     }
     setLoading(false); // Stop loading
-};
-
+  };
 
   // Check for upcoming rain alerts within 12 hours
   const checkWeatherAlerts = (data) => {
@@ -215,7 +215,7 @@ const App = () => {
         </View>
       ) : (
         <>
-          <Animated.View style={[styles.cloudContainer, { transform: [{ translateX: cloudAnim.interpolate({ inputRange: [0, 1], outputRange: ["0%", "100%"] }) }] }]}>          
+          <Animated.View style={[styles.cloudContainer, { transform: [{ translateX: cloudAnim.interpolate({ inputRange: [0, 1], outputRange: ["0%", "100%"] }) }] }]}>
             <Image source={require('./assets/cloud.png')} style={styles.cloud} />
           </Animated.View>
           <View style={styles.header}>
@@ -258,15 +258,17 @@ const App = () => {
                 <Text style={styles.forecastTitle}>24-Hour Forecast</Text>
                 <ScrollView horizontal ref={scrollViewRef} showsHorizontalScrollIndicator={false}>
                   {data.forecast.forecastday[0].hour.map((hour, index) => (
-                    <View key={index} style={styles.hourlyForecast}>
-                      <Text style={styles.hour}>{new Date(hour.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</Text>
+                    <View key={index} style={styles.hourForecast}>
+                      <Text style={styles.time}>{new Date(hour.time).toLocaleTimeString()}</Text>
                       <Image style={styles.icon} source={{ uri: `http:${hour.condition.icon}` }} />
                       <Text style={styles.temp}>{hour.temp_c}°C</Text>
+                      <Text style={styles.condition}>{hour.condition.text}</Text>
                     </View>
                   ))}
                 </ScrollView>
               </View>
 
+              {/* Travel Planner Section */}
               <View style={styles.plannerContainer}>
                 <Text style={styles.plannerTitle}>Travel Planner</Text>
                 <TextInput style={styles.input} placeholder="Your Location" value={inputLocation} onChangeText={setInputLocation} />
@@ -275,21 +277,31 @@ const App = () => {
                   <Text style={styles.searchButtonText}>Find Safe Route</Text>
                 </TouchableOpacity>
 
-                {data && (
-                  <Text style={styles.advice}>
-                    {getTravelAdvice(data.current.condition.text, data.current.temp_c)}
-                  </Text>
+                {safeRoute.length > 0 && (
+                  <View style={styles.routeContainer}>
+                    {safeRoute.map((item, index) => (
+                      <Text key={index} style={styles.routeItem}>
+                        {item.city}: {item.condition} - Safety: {item.isSafe ? "Safe" : "Unsafe"}
+                      </Text>
+                    ))}
+                  </View>
+                )}
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Add your travel notes or plans"
+                  value={travelNotes}
+                  onChangeText={setTravelNotes}
+                />
+
+                {/* Display Travel Notes */}
+                {travelNotes.trim() !== "" && (
+                  <View style={styles.notesContainer}>
+                    <Text style={styles.notesTitle}>Your Travel Plan:</Text>
+                    <Text style={styles.notes}>{travelNotes}</Text>
+                  </View>
                 )}
               </View>
-
-              {safeRoute.length > 0 && (
-                <View style={styles.routeContainer}>
-                  <Text style={styles.routeTitle}>Route</Text>
-                  <Text style={styles.routeText}>
-                    {safeRoute.map(({ city, condition, isSafe }) => `${city} (${condition}${isSafe ? " - Safe" : " - Unsafe"})`).join(" → ")}
-                  </Text>
-                </View>
-              )}
             </ScrollView>
           )}
         </>
@@ -298,162 +310,201 @@ const App = () => {
   );
 };
 
-//design
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5", // Light background for better readability
   },
   darkContainer: {
-    backgroundColor: '#2c3e50',
-    color: 'ffffff',
+    backgroundColor: "#2c3e50", // Dark mode container
   },
   cloudContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
-    right: 0,
-    bottom: 0,
-    overflow: 'hidden',
+    width: "100%",
+    height: 150,
+    overflow: "hidden",
   },
   cloud: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
+    width: "100%",
+    height: 100,
+    position: "absolute",
+    top: 0,
+    left: 0,
   },
   header: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    marginBottom: 10,
+    borderBottomColor: "#ddd",
+    marginBottom: 20,
   },
   headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: "bold",
   },
   searchContainer: {
-    width: '100%',
+    width: "100%",
     marginBottom: 20,
   },
   input: {
-    width: '100%',
+    width: "100%",
     height: 40,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderWidth: 1,
     borderRadius: 8,
     paddingLeft: 10,
     marginBottom: 10,
+    backgroundColor: "#fff", // Input background color for better contrast
   },
   searchButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: "#007BFF",
     paddingVertical: 10,
-    borderRadius: 5,
-    alignItems: 'center',
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
   },
   searchButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
+    fontWeight: "bold",
   },
   weatherContainer: {
-    width: '100%',
-    padding: 10,
-    backgroundColor: '#fff',
+    width: "100%",
+    padding: 15,
+    backgroundColor: "#fff",
     borderRadius: 8,
     marginBottom: 20,
+    alignItems: "center",
   },
   location: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: "bold",
     marginBottom: 10,
   },
   temperature: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 30,
+    fontWeight: "bold",
     marginBottom: 10,
   },
   icon: {
     width: 50,
     height: 50,
-  },
-  condition: {
-    fontSize: 24,
     marginBottom: 10,
   },
+  condition: {
+    fontSize: 20,
+    marginBottom: 10,
+    textAlign: "center",
+    color: "#555",
+  },
   details: {
-    fontSize: 14,
-    color: '#555',
+    fontSize: 16,
+    color: "#777",
+    marginBottom: 5,
   },
   forecastContainer: {
-    width: '100%',
+    width: "100%",
     marginBottom: 20,
   },
   forecastTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: "bold",
     marginBottom: 10,
   },
   dailyForecast: {
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  day: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 20,
   },
   temp: {
-    fontSize: 16,
-    marginTop: 5,
+    fontSize: 18,
+    fontWeight: "bold",
   },
-  hourlyForecast: {
-    width: 70,
-    alignItems: 'center',
+  hourForecast: {
+    width: 80,
+    alignItems: "center",
     marginHorizontal: 5,
   },
-  hour: {
+  time: {
     fontSize: 14,
     marginBottom: 5,
   },
+  routeContainer: {
+    width: "100%",
+    padding: 15,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  routeTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  routeText: {
+    fontSize: 16,
+    marginVertical: 5,
+  },
   plannerContainer: {
-    width: '100%',
-    backgroundColor: '#fff',
+    width: "100%",
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 8,
     marginBottom: 20,
   },
   plannerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: "bold",
     marginBottom: 20,
+  },
+  notesContainer: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: "#f7f7f7",
+    borderRadius: 8,
+  },
+  notesTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  notes: {
+    fontSize: 16,
+    marginTop: 10,
+    color: "#555",
   },
   advice: {
     fontSize: 16,
     marginTop: 10,
+    color: "#555",
+  },
+});
+
+
+export default App;
+center",
+    marginHorizontal: 5,
+  },
+  time: {
+    fontSize: 14,
+    marginBottom: 5,
   },
   routeContainer: {
-    width: '100%',
-    backgroundColor: '#fff',
-	padding: 10,
+    width: "100%",
+    padding: 15,
+    backgroundColor: "#fff",
     borderRadius: 8,
     marginBottom: 20,
   },
   routeTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: "bold",
     marginBottom: 10,
   },
   routeText: {
-    fontSize: 20,
-  },
-});
-
-export default App;
-	
+    fontSi
