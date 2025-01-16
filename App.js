@@ -240,7 +240,8 @@ const toggleEditMode = () => {
             <Image source={require('./assets/cloud.png')} style={styles.cloud} />
           </Animated.View>
           <View style={styles.header}>
-            <Text style={styles.headerText}>Weathering With Us</Text>
+          <Image source={require('./assets/logo.png')} style={styles.logo} />
+            <Text style={styles.headerText}>WWU</Text>
             <Switch value={isDarkMode} onValueChange={() => setIsDarkMode(!isDarkMode)} />
           </View>
 
@@ -396,10 +397,17 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ddd",
     marginBottom: 20,
   },
+  logo: {
+    width: 50, // Adjust the width of the logo
+    height: 50, // Adjust the height of the logo
+    resizeMode: "contain", // Ensure the aspect ratio is maintained
+    marginRight: 10, // Add spacing between the logo and other elements
+  },
   headerText: {
     fontSize: 24,
     fontWeight: "bold",
   },
+  
   searchContainer: {
     width: "100%",
     marginBottom: 20,
