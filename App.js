@@ -28,6 +28,26 @@ const App = () => {
   const [isDarkMode, setIsDarkMode] = React.useState(false); // Dark mode toggle
   const [loading, setLoading] = React.useState(false); // Loading indicator for async operations
   const [travelNotes, setTravelNotes] = React.useState(""); // State for storing travel notes
+  const [travelNotesTitle, setTravelNotesTitle] = React.useState("Travel Notes"); // Initial title state
+const [isEditing, setIsEditing] = React.useState(false); // State to track whether the user is editing
+
+// Function to handle Edit button click
+const handleEdit = () => {
+  setIsEditing(true); // Enable editing mode
+};
+
+// Function to handle Save button click
+const handleSave = () => {
+  setIsEditing(false); // Disable editing mode
+  // Optionally, you could save the updated title to local storage or server
+};
+
+
+// Function to toggle the edit mode
+const toggleEditMode = () => {
+  setIsEditing(!isEditing);
+};
+
 
   // Animated value for moving clouds
   const cloudAnim = React.useRef(new Animated.Value(0)).current;
@@ -269,6 +289,7 @@ const App = () => {
               </View>
 
               {/* Travel Planner Section */}
+              
               <View style={styles.plannerContainer}>
                 <Text style={styles.plannerTitle}>Travel Planner</Text>
                 <TextInput style={styles.input} placeholder="Your Location" value={inputLocation} onChangeText={setInputLocation} />
@@ -287,20 +308,45 @@ const App = () => {
                   </View>
                 )}
 
-                <TextInput
-                  style={styles.input}
-                  placeholder="Add your travel notes or plans"
-                  value={travelNotes}
-                  onChangeText={setTravelNotes}
-                />
+               {/* Travel Notes Section */}
+{/* Travel Notes Section */}
+<View style={styles.notesContainer}>
+  <TextInput
+    style={styles.titleInput}
+    placeholder="Edit title for your travel notes"
+    value={travelNotesTitle}
+    onChangeText={setTravelNotesTitle}
+    editable={isEditing}  // Allow title editing only if isEditing is true
+  />
+  
+  {isEditing ? (
+    <TouchableOpacity style={styles.editButton} onPress={handleSave}>
+      <Text style={styles.editButtonText}>Save</Text>
+    </TouchableOpacity>
+  ) : (
+    <Text style={styles.notesTitle}>{travelNotesTitle}</Text>
+  )}
+  
+  {isEditing ? (
+    <TextInput
+      style={styles.input}
+      placeholder="Add notes for your trip"
+      value={travelNotes}
+      onChangeText={setTravelNotes}
+      multiline
+    />
+  ) : (
+    <Text style={styles.notesText}>{travelNotes}</Text>
+  )}
 
-                {/* Display Travel Notes */}
-                {travelNotes.trim() !== "" && (
-                  <View style={styles.notesContainer}>
-                    <Text style={styles.notesTitle}>Your Travel Plan:</Text>
-                    <Text style={styles.notes}>{travelNotes}</Text>
-                  </View>
-                )}
+  {!isEditing && (
+    <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
+      <Text style={styles.editButtonText}>Edit</Text>
+    </TouchableOpacity>
+  )}
+</View>
+
+
               </View>
             </ScrollView>
           )}
@@ -326,6 +372,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 150,
     overflow: "hidden",
+    backgroundColor: 'grey'
   },
   cloud: {
     width: "100%",
@@ -410,6 +457,9 @@ const styles = StyleSheet.create({
   forecastContainer: {
     width: "100%",
     marginBottom: 20,
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 10,
   },
   forecastTitle: {
     fontSize: 22,
@@ -483,28 +533,56 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: "#555",
   },
+  editButton: {
+    backgroundColor: "#007BFF", // Blue background color for the button
+    padding: 10,                // Padding inside the button
+    borderRadius: 5,            // Rounded corners for the button
+    marginTop: 10,              // Space between the input and the button
+    alignItems: "center",       // Center align the text within the button
+  },
+  
+  editButtonText: {
+    color: "#fff",              // White text color for the button text
+    fontSize: 16,               // Font size for the button text
+    fontWeight: "bold",         // Bold text for emphasis
+  },
+  
+  notesText: {
+    fontSize: 16,               // Font size for the travel notes in view mode
+    color: "#333",              // Dark gray text color for notes
+    marginTop: 10,              // Space above the notes text
+    padding: 10,                // Padding for better spacing inside the text box
+    backgroundColor: "#f5f5f5", // Light background for the text box
+    borderRadius: 5,            // Rounded corners for the text box
+  },
+  titleInput: {
+    fontSize: 24,               // Larger font size for the title
+    fontWeight: "bold",         // Bold font weight for emphasis
+    color: "#333",              // Dark text color for the title input
+    marginBottom: 10,           // Space below the title input
+    padding: 10,                // Padding inside the input field
+    backgroundColor: "#f5f5f5", // Light background for the title input
+    borderRadius: 5,            // Rounded corners for the title input
+  },
+  
+  notesTitle: {
+    fontSize: 24,               // Larger font size for the title
+    fontWeight: "bold",         // Bold font weight for emphasis
+    color: "#333",              // Dark color for the title
+    marginBottom: 10,           // Space below the title
+  },
+  
+  notesText: {
+    fontSize: 16,               // Font size for the travel notes in view mode
+    color: "#333",              // Dark gray text color for notes
+    marginTop: 10,              // Space above the notes text
+    padding: 10,                // Padding for better spacing inside the text box
+    backgroundColor: "#f5f5f5", // Light background for the text box
+    borderRadius: 5,            // Rounded corners for the text box
+  },
+  
+  
 });
 
 
 export default App;
-center",
-    marginHorizontal: 5,
-  },
-  time: {
-    fontSize: 14,
-    marginBottom: 5,
-  },
-  routeContainer: {
-    width: "100%",
-    padding: 15,
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    marginBottom: 20,
-  },
-  routeTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  routeText: {
-    fontSi
