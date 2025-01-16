@@ -27,20 +27,21 @@ const App = () => {
   const [safeRoute, setSafeRoute] = React.useState([]); // Weather and safety data for the travel route
   const [isDarkMode, setIsDarkMode] = React.useState(false); // Dark mode toggle
   const [loading, setLoading] = React.useState(false); // Loading indicator for async operations
-  const [travelNotes, setTravelNotes] = React.useState(""); // State for storing travel notes
-  const [travelNotesTitle, setTravelNotesTitle] = React.useState("Travel Notes"); // Initial title state
-const [isEditing, setIsEditing] = React.useState(false); // State to track whether the user is editing
-
-// Function to handle Edit button click
-const handleEdit = () => {
-  setIsEditing(true); // Enable editing mode
-};
-
-// Function to handle Save button click
-const handleSave = () => {
-  setIsEditing(false); // Disable editing mode
-  // Optionally, you could save the updated title to local storage or server
-};
+  const [travelNotesTitle, setTravelNotesTitle] = React.useState("Travel Notes"); // Default title
+  const [travelNotes, setTravelNotes] = React.useState("");  // Notes content
+  const [isEditing, setIsEditing] = React.useState(false);  // Track whether editing is active
+  
+  // Function to handle "Edit" button click
+  const handleEdit = () => {
+    setIsEditing(true);  // Enable editing mode
+  };
+  
+  // Function to handle "Save" button click
+  const handleSave = () => {
+    setIsEditing(false);  // Disable editing mode
+    // Optionally save updated title and notes to a database or local storage
+  };
+  
 
 
 // Function to toggle the edit mode
@@ -310,15 +311,17 @@ const toggleEditMode = () => {
 
                {/* Travel Notes Section */}
 {/* Travel Notes Section */}
+{/* Travel Notes Section */}
 <View style={styles.notesContainer}>
   <TextInput
     style={styles.titleInput}
-    placeholder="Edit title for your travel notes"
+    placeholder="Enter title for your travel notes"
     value={travelNotesTitle}
     onChangeText={setTravelNotesTitle}
     editable={isEditing}  // Allow title editing only if isEditing is true
   />
   
+  {/* If the user is editing, show the Save button */}
   {isEditing ? (
     <TouchableOpacity style={styles.editButton} onPress={handleSave}>
       <Text style={styles.editButtonText}>Save</Text>
@@ -327,6 +330,7 @@ const toggleEditMode = () => {
     <Text style={styles.notesTitle}>{travelNotesTitle}</Text>
   )}
   
+  {/* Notes content */}
   {isEditing ? (
     <TextInput
       style={styles.input}
@@ -339,12 +343,14 @@ const toggleEditMode = () => {
     <Text style={styles.notesText}>{travelNotes}</Text>
   )}
 
+  {/* Show Edit button when not editing */}
   {!isEditing && (
     <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
       <Text style={styles.editButtonText}>Edit</Text>
     </TouchableOpacity>
   )}
 </View>
+
 
 
               </View>
@@ -579,6 +585,53 @@ const styles = StyleSheet.create({
     padding: 10,                // Padding for better spacing inside the text box
     backgroundColor: "#f5f5f5", // Light background for the text box
     borderRadius: 5,            // Rounded corners for the text box
+  },
+  titleInput: {
+    fontSize: 24,               // Font size for title input
+    fontWeight: "bold",         // Bold font weight for emphasis
+    color: "#333",              // Dark text color
+    marginBottom: 10,           // Space below the title input
+    padding: 10,                // Padding inside the title input field
+    backgroundColor: "#f5f5f5", // Light background color
+    borderRadius: 5,            // Rounded corners for the title input
+  },
+  
+  notesTitle: {
+    fontSize: 24,               // Font size for the title
+    fontWeight: "bold",         // Bold font for emphasis
+    color: "#333",              // Dark color for title
+    marginBottom: 10,           // Space below the title
+  },
+  
+  notesText: {
+    fontSize: 16,               // Font size for the notes text
+    color: "#333",              // Dark gray color for the notes content
+    marginTop: 10,              // Space above the notes text
+    padding: 10,                // Padding inside the notes content area
+    backgroundColor: "#f5f5f5", // Light background for the notes content
+    borderRadius: 5,            // Rounded corners for the notes box
+  },
+  
+  input: {
+    fontSize: 16,               // Font size for input when editing the notes
+    color: "#333",              // Dark gray color for the input text
+    marginTop: 10,              // Space above the input box
+    padding: 10,                // Padding inside the input box
+    backgroundColor: "#f5f5f5", // Light background for the input box
+    borderRadius: 5,            // Rounded corners for the input box
+  },
+  
+  editButton: {
+    marginTop: 10,
+    backgroundColor: "#680404", // Your main color for buttons
+    padding: 10,
+    borderRadius: 5,
+  },
+  
+  editButtonText: {
+    color: "#fff",              // White text for the button
+    fontSize: 16,
+    textAlign: "center",
   },
   
   
