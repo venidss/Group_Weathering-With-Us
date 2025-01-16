@@ -276,21 +276,18 @@ const toggleEditMode = () => {
               </View>
 
               <View style={styles.forecastContainer}>
-  <Text style={styles.forecastTitle}>24-Hour Forecast</Text>
-  <ScrollView horizontal ref={scrollViewRef} showsHorizontalScrollIndicator={false}>
-    {data.forecast.forecastday[0].hour.map((hour, index) => (
-      <View key={index} style={styles.hourForecast}>
-        <Text style={styles.time}>
-          {new Date(hour.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </Text>
-        <Image style={styles.icon} source={{ uri: `http:${hour.condition.icon}` }} />
-        <Text style={styles.temp}>{hour.temp_c}°C</Text>
-        <Text style={styles.condition}>{hour.condition.text}</Text>
-      </View>
-    ))}
-  </ScrollView>
-</View>
-
+                <Text style={styles.forecastTitle}>24-Hour Forecast</Text>
+                <ScrollView horizontal ref={scrollViewRef} showsHorizontalScrollIndicator={false}>
+                  {data.forecast.forecastday[0].hour.map((hour, index) => (
+                    <View key={index} style={styles.hourForecast}>
+                      <Text style={styles.time}>{new Date(hour.time).toLocaleTimeString()}</Text>
+                      <Image style={styles.icon} source={{ uri: `http:${hour.condition.icon}` }} />
+                      <Text style={styles.temp}>{hour.temp_c}°C</Text>
+                      <Text style={styles.condition}>{hour.condition.text}</Text>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
 
               {/* Travel Planner Section */}
               
